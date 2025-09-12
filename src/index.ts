@@ -1,6 +1,6 @@
 import { Decoder } from '@vaultie/lds-merkle-proof-2019';
 import jsigs from 'jsonld-signatures';
-import { lookForTx, type ExplorerAPI, type TransactionData, type IBlockchainObject } from '@blockcerts/explorer-lookup';
+import { lookForTx, type ExplorerAPI, type TransactionData, type IBlockchainObject } from '@adityaghag/explorer-lookup';
 import getTransactionId from './helpers/getTransactionId.js';
 import getChain from './helpers/getChain.js';
 import { removeEntry } from './utils/array.js';
