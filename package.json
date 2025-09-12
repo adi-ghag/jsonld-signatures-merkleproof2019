@@ -1,6 +1,6 @@
 {
   "name": "@adityaghag/jsonld-signatures-merkleproof2019",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A jsonld signature implementation to support MerkleProof2019 verification in Verifiable Credential context",
   "exports": {
     "import": "./lib/esm/index.js",
