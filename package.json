@@ -14,7 +14,7 @@
     "@ethersproject/keccak256": "^5.8.0",
     "@noble/curves": "^1.9.2",
     "@trust/keyto": "^1.0.1",
-    "@vaultie/lds-merkle-proof-2019": "^0.0.12",
+    "@vaultie/lds-merkle-proof-2019": "github:adi-ghag/lds-merkle-proof-2019",
     "bitcoinjs-lib": "^6.0.2",
     "bs58": "^6.0.0",
     "jsonld": "^8.3.2",
