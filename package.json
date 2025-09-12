@@ -1,6 +1,6 @@
 {
-  "name": "jsonld-signatures-merkleproof2019",
-  "version": "0.0.0-dev",
+  "name": "@adityaghag/jsonld-signatures-merkleproof2019",
+  "version": "1.0.0",
   "description": "A jsonld signature implementation to support MerkleProof2019 verification in Verifiable Credential context",
   "exports": {
     "import": "./lib/esm/index.js",
@@ -55,7 +55,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blockchain-certificates/jsonld-signatures-merkleproof2019.git"
+    "url": "git+https://github.com/adi-ghag/jsonld-signatures-merkleproof2019.git"
   },
   "keywords": [
     "verifiable",
@@ -66,10 +66,13 @@
     "jsonld",
     "signatures"
   ],
-  "author": "Blockcerts",
+  "author": "adi-ghag",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/blockchain-certificates/jsonld-signatures-merkleproof2019/issues"
+    "url": "https://github.com/adi-ghag/jsonld-signatures-merkleproof2019/issues"
   },
-  "homepage": "https://github.com/blockchain-certificates/jsonld-signatures-merkleproof2019#readme"
+  "homepage": "https://github.com/adi-ghag/jsonld-signatures-merkleproof2019#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
