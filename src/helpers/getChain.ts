@@ -6,7 +6,7 @@ import { type DecodedProof } from '../models/Proof';
 function getMerkleRoot2019Chain (anchor: string): IBlockchainObject {
   const dataArray = anchor.split(':');
 
-  let mainChain;
+  let mainChain: string;
   switch (dataArray[1]) {
     case BLOCKCHAINS.mocknet.blinkCode:
       return getChainObject(BLOCKCHAINS.mocknet.signatureValue);
@@ -16,11 +16,29 @@ function getMerkleRoot2019Chain (anchor: string): IBlockchainObject {
     case BLOCKCHAINS.ethmain.blinkCode:
       mainChain = BLOCKCHAINS.ethmain.name;
       break;
+    case 'arb':
+      mainChain = 'Arbitrum';
+      break;
     default:
       throw new Error('Could not retrieve chain.');
   }
 
   const network = dataArray[2];
+
+  // Special handling for bloxberg which has signatureValue 'ethbloxberg'
+  if (network === 'bloxberg' && mainChain === BLOCKCHAINS.ethmain.name) {
+    return getChainObject('ethbloxberg');
+  }
+
+  // Special handling for Arbitrum chains
+  if (mainChain === 'Arbitrum') {
+    if (network === 'sepolia') {
+      return getChainObject('arbitrumSepolia');
+    } else if (network === 'one' || network === 'mainnet') {
+      return getChainObject('arbitrumOne');
+    }
+  }
+
   const chainCodeSignatureValue = mainChain.toLowerCase() + capitalize(network);
   return getChainObject(chainCodeSignatureValue);
 }

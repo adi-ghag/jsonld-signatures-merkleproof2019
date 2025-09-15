@@ -50,6 +50,8 @@
     "start:mock-server": "tsx ./tests/mock-server/issuer.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:bloxberg": "vitest run --testNamePattern=Bloxberg",
+    "verify:bloxberg": "tsx examples/test-bloxberg-certificate.ts",
     "semantic-release": "semantic-release",
     "prepare": "husky install"
   },

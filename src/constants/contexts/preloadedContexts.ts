@@ -17,5 +17,6 @@ preloadedContexts['https://w3id.org/blockcerts/schema/3.0-beta/context.json'] = 
 preloadedContexts['https://w3id.org/blockcerts/v3.0-beta'] = CONTEXTS.BLOCKCERTSV3_BETA;
 
 preloadedContexts['https://w3id.org/security/suites/ed25519-2020/v1'] = CONTEXTS.ED25519;
+preloadedContexts['https://w3id.org/bloxberg/schema/research_object_certificate_v1'] = CONTEXTS.BLOXBERG;
 
 export default preloadedContexts;
