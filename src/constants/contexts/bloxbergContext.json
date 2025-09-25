@@ -1,32 +1,45 @@
 {
-  "@context": {
-    "id": "@id",
-    "type": "@type",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "sec": "https://w3id.org/security#",
-    "schema": "https://schema.org/",
-    "bloxberg": "https://bloxberg.org/terms#",
+    "@context": {
+      "id": "@id",
+      "type": "@type",
+      "bl": "https://w3id.org/bloxberg",
+      "schema": "http://schema.org/",
+      "sec": "https://w3id.org/security#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
 
-    "VerifiableCredential": "https://www.w3.org/2018/credentials#VerifiableCredential",
-    "BloxbergCredential": "bloxberg:BloxbergCredential",
+      "MerkleProof2019": "sec:MerkleProof2019",
 
-    "issuer": {"@id": "https://www.w3.org/2018/credentials#issuer", "@type": "@id"},
-    "issuanceDate": {"@id": "https://www.w3.org/2018/credentials#issuanceDate", "@type": "xsd:dateTime"},
-    "credentialSubject": {"@id": "https://www.w3.org/2018/credentials#credentialSubject", "@type": "@id"},
+      "BloxbergCredential": "bl:BloxbergCredential",
+      "introductionUrl": { "@id": "bl:introductionUrl", "@type": "@id" },
 
-    "issuingOrg": {"@id": "bloxberg:issuingOrg", "@type": "@id"},
-    "displayHtml": {"@id": "bloxberg:displayHtml", "@type": "xsd:string"},
-    "crid": {"@id": "bloxberg:crid", "@type": "xsd:string"},
-    "cridType": {"@id": "bloxberg:cridType", "@type": "xsd:string"},
-    "metadataJson": {"@id": "bloxberg:metadataJson", "@type": "xsd:string"},
+      "CryptographicKey": "sec:Key",
+      "Digest": "sec:Digest",
+      "cridType": "sec:digestAlgorithm",
+      "crid": "sec:digestValue",
 
-    "proof": {"@id": "sec:proof", "@type": "@id", "@container": "@graph"},
-    "MerkleProof2019": "sec:MerkleProof2019",
-    "created": {"@id": "https://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
-    "proofValue": {"@id": "sec:proofValue", "@type": "sec:multibase"},
-    "proofPurpose": {"@id": "sec:proofPurpose", "@type": "@vocab"},
-    "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"},
-    "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id"},
-    "ens_name": {"@id": "bloxberg:ensName", "@type": "xsd:string"}
+      "domain": "sec:domain",
+      "nonce": "sec:nonce",
+      "proofValue": "sec:proofValue",
+      "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
+      "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"},
+      "proofPurpose": {"@id": "sec:proofPurpose", "@type": "@vocab"},
+      "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"},
+      "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
+      "challenge": "sec:challenge",
+      "expires": {"@id": "sec:expiration", "@type": "xsd:dateTime"},
+
+
+      "name": {
+        "@id": "schema:name"
+      },
+
+      "issuingOrg": {
+        "@id": "bl:issuingOrganization",
+        "@type": "@id"
+      },
+      "metadataJson": {
+        "@id": "bl:metadata",
+        "@type": "xsd:string"
+      }
+    }
   }
-}

@@ -1,5 +1,6 @@
 import assertProofValidity from './assertProofValidity.js';
 import computeLocalHash from './computeLocalHash.js';
+import computeLocalHashForBloxberg from './computeLocalHashForBloxberg.js';
 import ensureHashesEqual from './ensureHashesEqual.js';
 import ensureMerkleRootEqual from './ensureMerkleRootEqual.js';
 import ensureValidReceipt from './ensureValidReceipt.js';
@@ -11,6 +12,7 @@ export {
   assertProofValidity,
   compareIssuingAddress,
   computeLocalHash,
+  computeLocalHashForBloxberg,
   deriveIssuingAddressFromPublicKey,
   ensureHashesEqual,
   ensureMerkleRootEqual,

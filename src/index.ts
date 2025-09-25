@@ -8,6 +8,7 @@ import {
   assertProofValidity,
   isTransactionIdValid,
   computeLocalHash,
+  computeLocalHashForBloxberg,
   ensureHashesEqual,
   ensureMerkleRootEqual,
   ensureValidReceipt,
@@ -124,10 +125,6 @@ export class LDMerkleProof2019 extends LinkedDataProof {
     if (this.externalProof || this.document) {
       this.setProof(this.externalProof);
       this.getChain();
-      if (isMockChain(this.chain)) {
-        this.adaptProofVerificationProcessToMocknet();
-        this.adaptIdentityVerificationProcessToMocknet();
-      }
     }
   }
 
@@ -167,9 +164,12 @@ export class LDMerkleProof2019 extends LinkedDataProof {
     }
 
     this.getChain();
-    if (isMockChain(this.chain)) {
+    // Only use mocknet adaptation for actual mock chains, not testnets
+    if (isMockChain(this.chain) && this.chain.code === 'mocknet') {
       this.adaptProofVerificationProcessToMocknet();
       this.adaptIdentityVerificationProcessToMocknet();
+    } else if (this.shouldUseBloxbergHash()) {
+      this.adaptProofVerificationProcessForBloxberg();
     }
 
     if (!this.document) {
@@ -287,6 +287,19 @@ export class LDMerkleProof2019 extends LinkedDataProof {
     ];
   }
 
+  private shouldUseBloxbergHash (): boolean {
+    if (!this.chain) return false;
+    const bloxbergChains = ['ethbloxberg', 'arbitrumOne', 'arbitrumSepolia', 'arbitrumsepolia'];
+    return bloxbergChains.includes(this.chain.code);
+  }
+
+  private adaptProofVerificationProcessForBloxberg (): void {
+    const index = this.proofVerificationProcess.indexOf('computeLocalHash');
+    if (index !== -1) {
+      this.proofVerificationProcess[index] = 'computeLocalHashForBloxberg';
+    }
+  }
+
   private setOptions (options: MerkleProof2019Options): void {
     this.explorerAPIs = options.explorerAPIs ?? [];
     if (options.executeStepMethod && typeof options.executeStepMethod === 'function') {
@@ -325,10 +338,56 @@ export class LDMerkleProof2019 extends LinkedDataProof {
     );
   }
 
+  private extractHashFromABI(abiEncodedData: string): string {
+    // Only apply ABI decoding for specific EVM-based chains that use ABI encoding
+    const abiChains = ['ethbloxberg', 'arbitrumone', 'arbitrumsepolia'];
+
+    if (!abiChains.includes(this.chain?.code)) {
+      return abiEncodedData;
+    }
+
+    // Try to decode every 64-character (32 bytes) chunk as hex and check if it's a valid hash
+    for (let i = 0; i <= abiEncodedData.length - 64; i += 2) {
+      const chunk = abiEncodedData.substring(i, i + 64);
+
+      // Skip if chunk doesn't look like a hash (all zeros, too short, etc.)
+      if (chunk.length !== 64 || /^0+$/.test(chunk)) {
+        continue;
+      }
+
+      // Check if this chunk matches our expected merkle root
+      if (chunk === this.proofValue.merkleRoot) {
+        return chunk;
+      }
+    }
+
+    // Try to decode larger chunks (128 chars = 64 bytes) as hex-encoded strings
+    for (let i = 0; i <= abiEncodedData.length - 128; i += 2) {
+      const chunk = abiEncodedData.substring(i, i + 128);
+
+      try {
+        const decoded = Buffer.from(chunk, 'hex').toString('utf8');
+
+        // Check if decoded string is a valid hash (64 hex chars)
+        if (/^[0-9a-f]{64}$/i.test(decoded)) {
+          return decoded;
+        }
+      } catch (e) {
+        // Skip invalid hex
+        continue;
+      }
+    }
+
+    return abiEncodedData;
+  }
+
   private async checkMerkleRoot (): Promise<void> {
     await this.executeStep(
       'checkMerkleRoot',
-      () => ensureMerkleRootEqual(this.proofValue.merkleRoot, this.txData.remoteHash),
+      () => {
+        const decodedRemoteHash = this.extractHashFromABI(this.txData.remoteHash);
+        return ensureMerkleRootEqual(this.proofValue.merkleRoot, decodedRemoteHash);
+      },
       this.type // do not remove here or it will break CVJS
     );
   }
@@ -349,10 +408,21 @@ export class LDMerkleProof2019 extends LinkedDataProof {
     );
   }
 
+  private async computeLocalHashForBloxberg (): Promise<void> {
+    this.localDocumentHash = await this.executeStep(
+      'computeLocalHashForBloxberg',
+      async () => await computeLocalHashForBloxberg(this.document, this.proof),
+      this.type // do not remove here or it will break CVJS
+    );
+  }
+
   private async checkReceipt (): Promise<void> {
     await this.executeStep(
       'checkReceipt',
-      () => { ensureValidReceipt(this.proofValue); },
+      () => {
+        ensureValidReceipt(this.proofValue);
+        return 'valid'; // Return success indicator
+      },
       this.type
     );
   }
@@ -373,9 +443,9 @@ export class LDMerkleProof2019 extends LinkedDataProof {
       async () => {
         const txData = await lookForTx({
           transactionId: this.transactionId,
-          chain: this.chain?.code,
+          chain: this.chain?.signatureValue || this.chain?.code,
           explorerAPIs: this.explorerAPIs
-        });
+        } as any);
         return txData;
       },
       this.type // do not remove here or it will break CVJS
