@@ -1,11 +1,12 @@
 import { LDMerkleProof2019 } from './src/index.js';
+import { createCachedDocumentLoader } from './src/helpers/contextCache.js';
 
 // The credential to verify
 const credential = {
   "id": "https://bloxberg.org",
   "type": ["VerifiableCredential", "BloxbergCredential"],
   "issuer": "https://raw.githubusercontent.com/bloxberg-org/issuer_json/master/issuer.json",
-  "issuanceDate": "2025-09-25T08:44:12.056011+00:00",
+  "issuanceDate": "2025-09-30T09:23:36.173783+00:00",
   "credentialSubject": {
     "id": "https://sepolia.arbiscan.io/address/0x9858eC18a269EE69ebfD7C38eb297996827DDa98",
     "issuingOrg": {
@@ -18,8 +19,8 @@ const credential = {
   "metadataJson": "{\"authorName\": \"\", \"researchTitle\": \"\", \"email\": \"\"}",
   "proof": {
     "type": "MerkleProof2019",
-    "created": "2025-09-25T08:44:14.720389",
-    "proofValue": "znKD4YGVqA8texv5ZddaxpieVy6GhFpP7iALX8YHvP9PZYjYEHxCS7io6YkB6792QHdZzLW4eKuVkDw5xe73YyMUJc9EoxbMF5KC3W2FbLidobSoLPLuqevddR8DDpNtdWPQAscvXqDco6Txu51drvYrrekAsGXRJhKuovVqak1zqqJPV3tUWEgHw3Gj1ujap3GquzieE3kDk8V8wNSaBa8qbFA47zipER4Nkh5UEHUzkEL4wuoUv1wc4yYWq7WvzfvFBDLPQ2RByYX4RWKn96XU9Dywaa7odBocvc6fXAe3eW3iLq8BW1ZxAPY",
+    "created": "2025-09-30T09:23:38.408863",
+    "proofValue": "znKD4YGVqA8textuxDbawf7zad8AHzHu8K3wA4mTFfde5cbtypC6AgP2QXu3CfiGbnfP1Q1V7NoDyP8C7t4VGwzzqCH9EBnMx8ywHjfxRKHgDAQacG6DbiRSw61Fvh4tXfmD7bRwvXQ9qQJyZWFLHmnmnBpEDnRnkZogGHWbEPuz6MiKqk8pSHSqRZxRQagD5wgX3Snz6uEQP1JHuJAECugZHKsVrxHpAcwSB5LLZUjwvGhLKT57QiaX9ksjaFmVBbZKqEkq48rKvJdXt5QWyirH2ZCARboTVU5m2vyQHUVGL26kfkqXnunHtJV",
     "proofPurpose": "assertionMethod",
     "verificationMethod": "ecdsa-koblitz-pubkey:0x18a47Fd59848a98Df3C9E9792337F9943e0f1b0b",
     "ens_name": "mpdl.berg"
@@ -30,55 +31,99 @@ const credential = {
   ]
 };
 
-async function verifyArbitrumCredential() {
+async function verifyCredential() {
   try {
-    // Decode and print the proof value
-    const decodedProof = LDMerkleProof2019.decodeMerkleProof2019(credential.proof);
-    console.log('🔍 Decoded Proof Value:', JSON.stringify(decodedProof, null, 2));
+    console.log('🔍 Verifying Bloxberg credential...\n');
 
-    // Create verifier instance for Arbitrum Sepolia
+    // Create verifier instance - uses default Bloxberg explorer (Blockscout)
     const verifier = new LDMerkleProof2019({
-      document: credential,
-      options: {
-        explorerAPIs: [{
-          serviceURL: 'https://sepolia.arbiscan.io/tx/{transaction_id}',
-          priority: 0,
-          parsingFunction: (response: any) => {
-            console.log('🔍 Raw API Response:', response);
-            // For testing, return mock data since the transaction exists
-            return {
-              remoteHash: 'e887331ef9ed6d9ade7ad6f1010424f51ef4fcbb8fe7a2064e7325cc74264331',
-              issuingAddress: '0x18a47Fd59848a98Df3C9E9792337F9943e0f1b0b',
-              time: new Date().toISOString(),
-              revokedAddresses: []
-            };
-          },
-          apiType: 'rest' as any,
-          key: 'transaction_id'
-        }],
-        executeStepMethod: async (step: string, action: () => any) => {
-          try {
-            const result = await action();
-            console.log(`✅ ${step}: ${typeof result === 'object' ? JSON.stringify(result) : result}`);
-            return result;
-          } catch (error: any) {
-            console.log(`❌ ${step}: ${error.message}`);
-            throw error;
-          }
-        }
-      }
+      document: credential
     });
 
-    // Run full verification
+    // Decode the proof to examine its contents
+    const decodedProof = LDMerkleProof2019.decodeMerkleProof2019(credential.proof);
+
+    console.log('📋 Credential Overview:');
+    console.log(`- Type: ${credential.type.join(', ')}`);
+    console.log(`- Issuer: ${credential.issuer}`);
+    console.log(`- Issuance Date: ${credential.issuanceDate}`);
+    console.log(`- CRID: ${credential.crid}`);
+    console.log(`- Subject ID: ${credential.credentialSubject.id}`);
+    console.log();
+
+    console.log('🔐 Proof Details:');
+    console.log(`- Type: ${credential.proof.type}`);
+    console.log(`- Created: ${credential.proof.created}`);
+    console.log(`- Verification Method: ${credential.proof.verificationMethod}`);
+    console.log(`- ENS Name: ${credential.proof.ens_name}`);
+    console.log();
+
+    console.log('🌳 Decoded Merkle Proof:');
+    console.log(`- Target Hash: ${decodedProof.targetHash}`);
+    console.log(`- Merkle Root: ${decodedProof.merkleRoot}`);
+    console.log(`- Anchors: ${decodedProof.anchors.join(', ')}`);
+    console.log(`- Path Length: ${decodedProof.path?.length || 0}`);
+    console.log();
+
+    // Identify blockchain
+    const chain = verifier.getChain();
+    console.log('⛓️ Blockchain Information:');
+    console.log(`- Chain: ${chain.name} (${chain.code})`);
+    console.log(`- Blink Code: ${chain.blinkCode}`);
+    console.log();
+
+    // Get verification processes
+    const proofSteps = verifier.getProofVerificationProcess();
+    const identitySteps = verifier.getIdentityVerificationProcess();
+
+    console.log('🔄 Verification Process Steps:');
+    console.log('Proof Verification:', proofSteps.join(' → '));
+    console.log('Identity Verification:', identitySteps.join(' → '));
+    console.log();
+
+    // Attempt verification
+    console.log('✅ Attempting full verification...');
+
+    // Temporarily suppress error logs from failed explorer attempts
+    const originalLog = console.log;
+    console.log = (...args: any[]) => {
+      // Filter out JSON error messages from failed explorer requests
+      const message = args[0];
+      if (typeof message === 'string' && message.includes('"error"') && message.includes('Transaction')) {
+        return; // Skip this log
+      }
+      originalLog.apply(console, args);
+    };
+
     const result = await verifier.verifyProof({
       verifyIdentity: true,
+      documentLoader: createCachedDocumentLoader()
     });
 
-    console.log(`Verification Result: ${result.verified ? 'PASSED' : 'FAILED'} | Method: ${result.verificationMethod}${result.error ? ' | Error: ' + result.error : ''}`);
+    // Restore original console.log
+    console.log = originalLog;
+
+    console.log('\n📊 Verification Result:');
+    console.log(`- Verified: ${result.verified}`);
+    console.log(`- Verification Method: ${result.verificationMethod}`);
+
+    if (result.error) {
+      console.log(`- Error: ${result.error}`);
+    }
+
+    if (result.verified) {
+      console.log('\n🎉 Credential is VALID!');
+    } else {
+      console.log('\n❌ Credential verification FAILED');
+      if (result.error) {
+        console.log(`Reason: ${result.error}`);
+      }
+    }
 
   } catch (error: any) {
-    console.error('Verification failed:', error.message);
+    console.error('💥 Verification failed with error:', error.message);
+    console.error('Stack trace:', error.stack);
   }
 }
 
-verifyArbitrumCredential();
+verifyCredential();

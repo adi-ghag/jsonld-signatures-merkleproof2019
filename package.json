@@ -1,6 +1,6 @@
 {
   "name": "@adityaghag/jsonld-signatures-merkleproof2019",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A jsonld signature implementation to support MerkleProof2019 verification in Verifiable Credential context",
   "exports": {
     "import": "./lib/esm/index.js",
@@ -8,7 +8,7 @@
   },
   "typings": "lib/index.d.ts",
   "dependencies": {
-    "@adityaghag/explorer-lookup": "^1.1.1",
+    "@adityaghag/explorer-lookup": "^1.2.0",
     "@blockcerts/schemas": "^3.9.2",
     "@digitalbazaar/ecdsa-multikey": "github:blockchain-certificates/ecdsa-multikey#feat/secp256k1",
     "@ethersproject/keccak256": "^5.8.0",
@@ -17,7 +17,7 @@
     "@vaultie/lds-merkle-proof-2019": "github:adi-ghag/lds-merkle-proof-2019",
     "bitcoinjs-lib": "^6.0.2",
     "bs58": "^6.0.0",
-    "jsonld": "^8.3.2",
+    "jsonld": "^8.3.3",
     "jsonld-signatures": "^11.2.1",
     "lodash.clonedeep": "^4.5.0",
     "secp256k1": "^5.0.0",

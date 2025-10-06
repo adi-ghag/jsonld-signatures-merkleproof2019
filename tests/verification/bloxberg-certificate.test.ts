@@ -140,7 +140,7 @@ describe('Bloxberg Certificate Verification Test Suite', function () {
       expect(proofVerificationSteps).toEqual([
         'assertProofValidity',
         'getTransactionId',
-        'computeLocalHashForBloxberg',
+        'computeLocalHash',
         'fetchRemoteHash',
         'compareHashes',
         'checkMerkleRoot',

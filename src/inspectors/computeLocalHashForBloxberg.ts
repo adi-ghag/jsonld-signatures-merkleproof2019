@@ -4,6 +4,7 @@ import { toUTF8Data } from '../utils/data.js';
 import { isObject } from '../utils/object.js';
 import VerifierError from '../models/VerifierError.js';
 import getText from '../helpers/getText.js';
+import { createCachedDocumentLoader } from '../helpers/contextCache.js';
 
 export function getUnmappedFields (normalized: string): string[] | null {
   const normalizedArray = normalized.split('\n');
@@ -20,7 +21,8 @@ export function getUnmappedFields (normalized: string): string[] | null {
 
 export default async function computeLocalHashForBloxberg (
   document: any,
-  targetProof = null
+  targetProof = null,
+  documentLoader?: any
 ): Promise<string> { // TODO: define VC type
   // the previous implementation was using a reference of @context, thus always adding @vocab to @context,
   // thus passing the information down to jsonld regardless of the configuration option. We explicitly do that now,
@@ -51,7 +53,8 @@ export default async function computeLocalHashForBloxberg (
     algorithm: 'URDNA2015',
     format: 'application/nquads',
     safe: false,
-    expandContext: theDocument['@context']
+    expandContext: theDocument['@context'],
+    documentLoader: documentLoader || createCachedDocumentLoader()
   };
 
   let normalizedDocument: string;

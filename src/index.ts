@@ -310,18 +310,23 @@ export class LDMerkleProof2019 extends LinkedDataProof {
   }
 
   private async executeStep (step: string, action, verificationSuite = ''): Promise<any> {
+    console.log(`\n🔄 Executing step: ${step}`);
     const res: any = await action();
+    console.log(`✅ Completed step: ${step}`);
     return res;
   }
 
   private async verifyProcess (process: string[]): Promise<void> {
+    console.log(`\n📋 Starting verification process with ${process.length} steps:`, process);
     for (const verificationStep of process) {
       if (!this[verificationStep]) {
         console.error('verification logic for', verificationStep, 'not implemented');
         return;
       }
+      console.log(`\n🔍 Running verification step: ${verificationStep}`);
       await this[verificationStep]();
     }
+    console.log(`\n✅ All verification steps completed`);
   }
 
   private async assertProofValidity (): Promise<void> {
@@ -395,7 +400,8 @@ export class LDMerkleProof2019 extends LinkedDataProof {
   private async compareHashes (): Promise<void> {
     await this.executeStep(
       'compareHashes',
-      () => ensureHashesEqual(this.localDocumentHash, this.proofValue.targetHash),
+      () => 
+        ensureHashesEqual(this.localDocumentHash, this.proofValue.targetHash),
       this.type // do not remove here or it will break CVJS
     );
   }
@@ -411,7 +417,7 @@ export class LDMerkleProof2019 extends LinkedDataProof {
   private async computeLocalHashForBloxberg (): Promise<void> {
     this.localDocumentHash = await this.executeStep(
       'computeLocalHashForBloxberg',
-      async () => await computeLocalHashForBloxberg(this.document, this.proof),
+      async () => await computeLocalHashForBloxberg(this.document, this.proof, this.documentLoader),
       this.type // do not remove here or it will break CVJS
     );
   }
@@ -443,7 +449,7 @@ export class LDMerkleProof2019 extends LinkedDataProof {
       async () => {
         const txData = await lookForTx({
           transactionId: this.transactionId,
-          chain: this.chain?.signatureValue || this.chain?.code,
+          chain: this.chain?.code,
           explorerAPIs: this.explorerAPIs
         } as any);
         return txData;

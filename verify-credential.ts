@@ -1,4 +1,5 @@
 import { LDMerkleProof2019 } from './src/index.js';
+import { createCachedDocumentLoader } from './src/helpers/contextCache.js';
 
 // The credential to verify
 const credential = {
@@ -34,30 +35,9 @@ async function verifyCredential() {
   try {
     console.log('🔍 Verifying Bloxberg credential...\n');
 
-    // Create verifier instance with working bloxberg explorer
+    // Create verifier instance - uses default Bloxberg explorer (Blockscout)
     const verifier = new LDMerkleProof2019({
-      document: credential,
-      options: {
-        explorerAPIs: [{
-          serviceURL: 'https://blockexplorer.bloxberg.org/api?module=transaction&action=gettxinfo',
-          priority: 0,
-          parsingFunction: (response: any) => {
-            console.log('🔍 Custom explorer response:', JSON.stringify(response, null, 2));
-            if (response && response.status === '1' && response.result) {
-              const tx = response.result;
-              return {
-                remoteHash: tx.input ? tx.input.slice(-64) : null,
-                issuingAddress: tx.from,
-                time: new Date(parseInt(tx.timeStamp) * 1000).toISOString(),
-                revokedAddresses: []
-              };
-            }
-            throw new Error(`Transaction not found: ${response?.message || 'Unknown error'}`);
-          },
-          apiType: 'rest' as any,
-          key: 'txhash'
-        }]
-      }
+      document: credential
     });
 
     // Decode the proof to examine its contents
@@ -103,10 +83,25 @@ async function verifyCredential() {
 
     // Attempt verification
     console.log('✅ Attempting full verification...');
+
+    // Temporarily suppress error logs from failed explorer attempts
+    const originalLog = console.log;
+    console.log = (...args: any[]) => {
+      // Filter out JSON error messages from failed explorer requests
+      const message = args[0];
+      if (typeof message === 'string' && message.includes('"error"') && message.includes('Transaction')) {
+        return; // Skip this log
+      }
+      originalLog.apply(console, args);
+    };
+
     const result = await verifier.verifyProof({
       verifyIdentity: true,
-      documentLoader: () => null
+      documentLoader: createCachedDocumentLoader()
     });
+
+    // Restore original console.log
+    console.log = originalLog;
 
     console.log('\n📊 Verification Result:');
     console.log(`- Verified: ${result.verified}`);
@@ -125,7 +120,7 @@ async function verifyCredential() {
       }
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('💥 Verification failed with error:', error.message);
     console.error('Stack trace:', error.stack);
   }
