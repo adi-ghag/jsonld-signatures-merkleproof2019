@@ -245,12 +245,28 @@ const contextCache = new Map<string, any>([
 ]);
 
 /**
+ * Detects the current environment and returns the appropriate document loader
+ *
+ * @returns The appropriate jsonld document loader for the current environment
+ */
+function getDefaultDocumentLoader(): any {
+  // Check if we're in a browser environment
+  if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
+    // Browser environment - use XHR loader
+    return jsonld.documentLoaders.xhr();
+  }
+
+  // Node.js environment - use node loader
+  return jsonld.documentLoaders.node();
+}
+
+/**
  * Creates a document loader that checks the cache before making network requests
  *
  * @returns Document loader function compatible with jsonld.js
  */
 export function createCachedDocumentLoader(): (url: string) => Promise<any> {
-  const nodeLoader = jsonld.documentLoaders.node();
+  const defaultLoader = getDefaultDocumentLoader();
 
   return async (url: string) => {
     // Check cache first
@@ -263,7 +279,7 @@ export function createCachedDocumentLoader(): (url: string) => Promise<any> {
     }
 
     // Fall back to default loader for uncached URLs
-    return nodeLoader(url);
+    return defaultLoader(url);
   };
 }
 
